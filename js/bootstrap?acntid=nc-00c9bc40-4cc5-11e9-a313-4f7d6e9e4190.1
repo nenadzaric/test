@@ -1,0 +1,14 @@
+/** CloudSET HelpCenter Widgets Bootstrapper for : hbo-la.zendesk.com **/
+(function(window) {
+  window.csUrl = 'https://app-nc.cloudset.info';
+  window.loadCSUrl = 'https://app-nc.global.ssl.fastly.net';
+  var acntid = 'nc-00c9bc40-4cc5-11e9-a313-4f7d6e9e4190';
+  var domainStr = window.location.hostname;
+  $LAB.script(loadCSUrl + "/hc/deploy?domain=" + domainStr + "&acntid="+ acntid)
+   .wait(
+    function() {
+      loadCSJS(loadCSUrl);
+    }
+   )
+})(window);
+

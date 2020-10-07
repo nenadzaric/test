@@ -1,0 +1,226 @@
+var HBOCharmCityKingsWebsite = (function () {
+
+    var platform, currentPlatform;
+    var artOfTheRideSwiper, whoMadeMeSwiperMobile, whoMadeMeSwiperDesktop, interviewsSwiperMobile, interviewsSwiperDesktop;
+
+    function init() {
+        addEventListeners();
+        setPlatform();
+        // initSwipers();
+        getSiteHeight();
+    }
+
+    function addEventListeners() {
+        $(window).on('resize', emitResizeEvent);
+        $('body').on('click', '.play-button', playVideo);
+        $('body').on('click', '.js-close-modal', closeModal);
+        $('body').on('click', '.js-open-trailer', openModalTrailer);
+        $('body').on('click', '.js-stop-bubbling', stopBubbling);
+        $('body').on('click', '.js-track', trackedClickHandler);
+        $('body').on('click', '.js-toggle-mute', toggleMuteHandler);
+
+        // videos
+        $('video.watch-for-end').on('ended', videoEndHandler);
+    }
+
+    function stopBubbling(evt) {
+        evt.stopPropagation();
+    }
+
+    function toggleMuteHandler() {
+        $(this).toggleClass('has-sound');
+        $('#trailerBg').prop("muted", !$('#trailerBg').prop("muted"));
+
+    }
+
+    function trackedClickHandler(evt) {
+        evt.preventDefault();
+        var text = $(this).data('text');
+        var url = $(this).attr('href');
+        parent.dataLayer.push({
+            'event': 'link_click',
+            'text': text,
+            'url': url
+        });
+        if ($(this).hasClass('js-external-link')) {
+            window.open(url);
+        } else {
+            window.location = url;
+        }
+    }
+
+    function resizeHandler(evt) {
+        setPlatform();
+        if (platform !== currentPlatform) {
+            currentPlatform = platform;
+            // updateSwipers();
+        }
+        getSiteHeight();
+    }
+
+    function getSiteHeight() {
+        var siteHeight = $('body').height();
+        window.parent.postMessage(['HBOCharmCityKingsIframeHeight', siteHeight], '*');
+    }
+
+    function setPlatform() {
+        if (window.innerWidth <= 1080) {
+            platform = 'mobile';
+        } else {
+            platform = 'desktop';
+        }
+    }
+
+    function initSwipers() {
+        // ART OF THE RIDE
+        artOfTheRideSwiper = new Swiper('.art-of-the-ride-swiper', {
+            init: false,
+            navigation: {
+                nextEl: '.art-of-the-ride-swiper .swiper-button-next',
+                prevEl: '.art-of-the-ride-swiper .swiper-button-prev',
+            },
+        });
+
+        if (platform == 'mobile') {
+            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesMobile);
+        } else {
+            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesDesktop);
+        }
+        artOfTheRideSwiper.init();
+        artOfTheRideSwiper.on('slideChange', onPosterSwipe);
+
+        // WHO MADE ME
+        whoMadeMeSwiperMobile = new Swiper('.who-made-me-swiper-mobile', {
+            navigation: {
+                nextEl: '.who-made-me-swiper-mobile .swiper-button-next',
+                prevEl: '.who-made-me-swiper-mobile .swiper-button-prev',
+            },
+        });
+        whoMadeMeSwiperMobile.on('slideChange', onVideoSwipe);
+
+        whoMadeMeSwiperDesktop = new Swiper('.who-made-me-swiper-desktop', {
+            slidesPerView: 3,
+            centeredSlides: true,
+            loop: true,
+            navigation: {
+                nextEl: '.who-made-me-swiper-desktop .swiper-button-next',
+                prevEl: '.who-made-me-swiper-desktop .swiper-button-prev',
+            },
+        });
+        whoMadeMeSwiperDesktop.on('slideChange', onVideoSwipe);
+
+        // INTERVIEWS
+        interviewsSwiperMobile = new Swiper('.interviews-swiper-mobile', {
+            navigation: {
+                nextEl: '.interviews-swiper-mobile .swiper-button-next',
+                prevEl: '.interviews-swiper-mobile .swiper-button-prev',
+            },
+        });
+        interviewsSwiperMobile.on('slideChange', onVideoSwipe);
+
+        interviewsSwiperDesktop = new Swiper('.interviews-swiper-desktop', {
+            slidesPerView: 3,
+            centeredSlides: true,
+            loop: true,
+            navigation: {
+                nextEl: '.interviews-swiper-desktop .swiper-button-next',
+                prevEl: '.interviews-swiper-desktop .swiper-button-prev',
+            },
+        });
+        interviewsSwiperDesktop.on('slideChange', onVideoSwipe);
+
+        getSiteHeight();
+    }
+
+    function updateSwipers() {
+        artOfTheRideSwiper.removeAllSlides();
+        if (platform == 'mobile') {
+            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesMobile);
+            whoMadeMeSwiperMobile.update();
+            interviewsSwiperMobile.update();
+        } else {
+            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesDesktop);
+            whoMadeMeSwiperDesktop.update();
+            interviewsSwiperDesktop.update();
+        }
+        artOfTheRideSwiper.update();
+        getSiteHeight();
+    }
+
+    function playVideo(evt) {
+        var $video = $(this).find('video');
+        var video = $video[0];
+        video.play();
+        $(this).addClass('is-playing');
+
+        var videoDuration = video.duration;
+        var progressDuration = videoDuration * 1000;
+        var $progressBar = $video.siblings('.video-progress');
+        $progressBar.show().find('span').animate({width: '100%'}, progressDuration);
+    }
+
+    function videoEndHandler(evt) {
+        $('.play-button').removeClass('is-playing');
+        $('.video-progress').hide().find('span').css({width: 0});
+    }
+
+    function onVideoSwipe(evt) {
+        var $swiperVideos = this.$el.find('video');
+        $swiperVideos.each(function () {
+            $(this)[0].pause();
+            $(this)[0].currentTime = 0;
+        });
+        videoEndHandler();
+    }
+
+    function onPosterSwipe(evt) {
+        parent.dataLayer.push({
+            'event': 'cck_poster_view'
+        });
+    }
+
+    function openModalTrailer() {
+        parent.dataLayer.push({
+            'event': 'video_start',
+            'video_title': 'Trailer'
+        });
+
+        var iframe = '<iframe width="560" height="315" src="https://www.youtube.com/embed/8Cvrs-BCs6o?autoplay=1&playsinline=1&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
+        $('.modal-trailer-iframe').append(iframe);
+        $('.modal-trailer').show();
+        $('body').addClass('has-modal');
+        $('#trailerBg')[0].pause();
+    }
+
+    function closeModal() {
+        $('.modal-trailer-iframe').empty();
+        $('.modal').hide();
+        $('body').removeClass('has-modal');
+        $('#trailerBg')[0].play();
+    }
+
+    var resizeTimer;
+    function emitResizeEvent() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(resizeHandler, 250);
+    }
+
+    var artOfTheRideSlidesMobile = [
+        '<div class="swiper-slide" data-text="Poster 1"><img src="images/art-of-the-ride/fpo-poster-mobile-portrait.jpg" alt="Poster image of..."></div>',
+        '<div class="swiper-slide" data-text="Poster 2"><img src="images/art-of-the-ride/fpo-poster-mobile-portrait.jpg" alt="Poster image of..."></div>',
+        '<div class="swiper-slide" data-text="Poster 3"><img src="images/art-of-the-ride/fpo-poster-mobile-portrait.jpg" alt="Poster image of..."></div>'
+    ];
+
+    var artOfTheRideSlidesDesktop = [
+        '<div class="swiper-slide" data-text="Poster 1"><img src="images/art-of-the-ride/fpo-poster-desktop-square.jpg" alt="Poster image of..."></div>',
+        '<div class="swiper-slide" data-text="Poster 2"><img src="images/art-of-the-ride/fpo-poster-desktop-square.jpg" alt="Poster image of..."></div>',
+        '<div class="swiper-slide" data-text="Poster 3"><img src="images/art-of-the-ride/fpo-poster-desktop-square.jpg" alt="Poster image of..."></div>'
+    ];
+
+    return {
+        init: init
+    }
+
+})();
+
+document.addEventListener("DOMContentLoaded", HBOCharmCityKingsWebsite.init);
