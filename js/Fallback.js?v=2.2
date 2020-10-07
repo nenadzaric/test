@@ -1,0 +1,53 @@
+// !! DON'T EDIT !! CDN for assets - following line modified on build
+window.WOLVES_CDN = location.hostname === 'localhost' || location.port === '8080' ? '' : 'https://raised-by-wolves.micro.hbo.com/';
+
+window.addEventListener(
+    'load',
+    function () {
+        // Monotype fonts - Futura
+        var fontFace2 = document.createElement('link');
+        fontFace2.rel = 'stylesheet';
+        fontFace2.href = 'https://fast.fonts.net/cssapi/c74e648c-2df9-47d9-869f-c05e3572bb01.css';
+        document.head.appendChild(fontFace2);
+
+        var fallback = document.createElement('div');
+        fallback.className = 'fallback';
+
+        fallback.innerHTML =
+            '<link rel="stylesheet" href="' +
+            WOLVES_CDN +
+            'assets/css/fallback.css" />' +
+            '<div class="fallback-title"></div>' +
+            '<div class="fallback-message">Your browser<br>is not supported.</div>' +
+            '<div class="fallback-text">Gain access using<br>the latest version of<br><a href="https://www.mozilla.org/en-US/firefox/new/">Firefox</a>, <a href="https://www.google.com/chrome/">Chrome</a> or <a href="https://www.microsoft.com/en-us/edge">Edge</a></div>' +
+            '<div class="fallback-footer-legals">' +
+            '    <a href="https://www.hbomax.com/privacy">Privacy Policy</a> / <a href="https://www.hbomax.com/terms-of-use">Terms of Use</a>' +
+            '    <a href="https://www.hbomax.com/privacy#yourchoices">Ad Choices</a> / <a id="wolves-ccpa" role="button">Do Not Sell My Personal Information</a>' +
+            '</div>';
+
+        var parent = document.querySelector('#app-mount-rbw') || document.body;
+        parent.appendChild(fallback);
+
+        function initCCPA() {
+            var ccpaLinkWolves = document.querySelector('.fallback-footer-legals #wolves-ccpa');
+            var ccpaLink = document.querySelector('#compliance-link');
+            if (ccpaLink) {
+                // Style original footer off page
+                var footer = document.querySelector('footer');
+                if (footer)
+                    Object.assign(footer.style, {
+                        position: 'fixed',
+                        bottom: '100%',
+                    });
+
+                // forward click to original link
+                ccpaLinkWolves.addEventListener('click', function () {
+                    ccpaLink.click();
+                });
+            }
+        }
+
+        initCCPA();
+    },
+    false
+);

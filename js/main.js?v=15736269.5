@@ -1,0 +1,141 @@
+var skipPageControl = {
+   includenativeclient: false,
+
+   hasStorage: function() {
+      try {
+         var mod = "test";
+         localStorage.setItem(mod, mod);
+         localStorage.removeItem(mod);
+         return true;
+      } catch (exception) {
+         return false;
+      }
+   },
+
+   handleClick: function (ele) {
+      if (this.hasStorage()) {
+         if (localStorage.getItem("isUagWithIdp") === "false") {
+            this.handleClickOnNormalPortalPage(ele);
+         } else if (localStorage.getItem("isUagWithIdp") === "true") {
+            this.handleClickOnUAGWithIDP(ele);
+         }
+      } else {
+         console.log("No Web Storage support.");
+      }
+   },
+
+   handleClickOnNormalPortalPage: function(ele) {
+      if (localStorage.getItem("skipPageOnHTML") === "true") {
+         //To disable an enabled checkbox
+         ele.checked = false;
+         localStorage.setItem("skipPageOnHTML", "false");
+      } else {
+         //To skip portal page on normal broker
+         ele.checked = true;
+         localStorage.setItem("skipPageOnHTML", "true");
+      }
+   },
+
+   handleClickOnUAGWithIDP: function(ele) {
+      if (localStorage.getItem("skipPageOnIDP") === "true") {
+         //To disable an enabled checkbox
+         ele.checked = false;
+         //skipPageonIDP if for UAG with IDP portal page
+         localStorage.setItem("skipPageOnIDP", "false");
+         localStorage.setItem("skipPageToClient", "false");
+      } else {
+         //To skip portal page on UAG with IDP
+         ele.checked = true;
+         localStorage.setItem("skipPageOnIDP", "true");
+         if (ele.id === "skipPortalPageCheckboxNative") {
+            localStorage.setItem("skipPageToClient", 'native');
+         } else {
+            localStorage.setItem("skipPageToClient", 'html5');
+         }
+      }
+   },
+
+   handleCheckbox: function(event) {
+      var checkbox = document.getElementById(event.currentTarget.id);
+      if (event.keyCode === 32){
+         checkbox.checked = !checkbox.checked;
+         let inputEle = checkbox.getElementsByTagName("input")[0];
+         this.handleClick(inputEle);
+      }
+    },
+
+   init: function () {
+      this.urlParameterCheck();
+      if (this.includenativeclient) {
+         this.changeUIonPortalPage();
+      }
+      if (this.hasStorage()) {
+         var currentURL = window.location.href.toLowerCase();
+         if (this.hasStorage()) {
+            //for restore skip portal in setting panel
+            if (!this.includenativeclient) {
+               localStorage.setItem("isUagWithIdp", "false");
+            } else {
+               localStorage.setItem("isUagWithIdp", "true");
+            }
+         }
+
+         if (!this.includenativeclient
+            && localStorage.getItem("skipPageOnHTML") === "true") {
+            //on normal portal page
+            window.location.href = "/portal/webclient/index.html";
+         } else if (this.includenativeclient
+            && localStorage.getItem("skipPageOnIDP") === "true") {
+            //on UAG with IDP portal page
+            var clientType = localStorage.getItem("skipPageToClient");
+            if (clientType === "native") {
+               window.location.href = "/portal/nativeclient";
+            } else if (clientType === "html5"){
+               window.location.href = "/portal/webclient/index.html";
+            }
+         }
+      } else {
+         console.log("No Web Storage support.");
+      }
+   },
+
+   changeUIonPortalPage: function() {
+      //hide download button for native client
+      document.getElementById("nativeClient").style.display = "none";
+      //hide html access button
+      document.getElementById("webClient").style.display = "none";
+      document.getElementById("skipPortalPage").style.display = "none";
+
+      //show native entry
+      document.getElementById("nativeClientEntry").style.display = "block";
+      document.getElementById("skipPortalPageNative").style.display = "block";
+      //show html5 entry
+      document.getElementById("webClientEntry").style.display = "block";
+      document.getElementById("skipPortalPageHTML5").style.display = "block";
+      //show downloadlink
+      document.getElementById("download-title").style.display = 'block';
+
+      //change CSS of other element
+      document.getElementsByClassName("portal-block")[0].style.width = "160px";
+      document.getElementsByClassName("middle-line")[0].style.height = "135px";
+      document.getElementsByClassName("portal-list-item")[0].style.marginTop = "-22px";
+      document.getElementsByClassName("pull-right")[0].style.marginTop = "-157px";
+
+      //change tabindex
+      document.getElementById("downloadLink").setAttribute('tabindex', '6');
+      document.getElementById("helpLinkInPortal").setAttribute('tabindex', '7');
+   },
+
+   urlParameterCheck: function() {
+      var reg= /\?./;
+      var currentURL = window.location.href.toLowerCase();
+      if (reg.exec(currentURL)) {
+         var URLParamters = currentURL.substring(reg.exec(currentURL).index + 1).split('&');
+         this.includenativeclient =  URLParamters.indexOf('includenativeclientlaunch=true') > -1;
+      } else {
+         this.includenativeclient = false;
+      }
+   }
+};
+
+skipPageControl.init();

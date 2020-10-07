@@ -1,0 +1,330 @@
+var hboLoveLifeTimeline = (function (global) {
+
+    document.addEventListener('DOMContentLoaded', init, false);
+    window.addEventListener('resize', resizeHandler);
+
+    var cdn = 'videos/';
+
+    function init() {
+        addEventListeners();
+        showFirstCard();
+        setPlatform();
+        setMobileVideos();
+    }
+
+    function addEventListeners() {
+        document.querySelector('#hboLoveLifeTimeline').addEventListener('click', eventHandler);
+    }
+
+    function removeEventListeners() {
+        document.querySelector('#hboLoveLifeTimeline').removeEventListener('click', eventHandler);
+    }
+
+    function eventHandler(evt) {
+        if (evt.target.classList.contains('nav')) { navHandler(evt.target.dataset); }
+        if (evt.target.classList.contains('cta')) { ctaHandler(); }
+        if (evt.target.classList.contains('close-video')) { closeVideo(); }
+
+        if (evt.target.id == 'openMobileNav') { openMobileNav(); }
+        if (evt.target.id == 'closeMobileNav') { closeMobileNav(); }
+        if (evt.target.classList.contains('mobile-nav')) { mobileNavHandler(evt.target.dataset); }
+    }
+
+    function closeVideo() {
+        var card = document.querySelector('#hboLoveLifeTimeline').dataset.current;
+        document.querySelector('#'+card+'video').pause();
+        document.querySelector('#'+card+'video').currentTime = 0;
+        document.querySelector('#'+card+'overlay').classList.add('hidden');
+
+        document.querySelector('#yearNav').classList.remove('hidden');
+        document.querySelector('#openMobileNav').classList.remove('hidden');
+    }
+
+    function openMobileNav() {
+        document.querySelector('#mobileYearNav').classList.remove('hidden');
+    }
+
+    function closeMobileNav(dataset) {
+        document.querySelector('#mobileYearNav').classList.add('hidden');
+    }
+
+    function ctaHandler() {
+        var card = document.querySelector('#hboLoveLifeTimeline').dataset.current;
+        document.querySelector('#'+card+'overlay').classList.remove('hidden');
+        document.querySelector('#'+card+'video').play();
+
+        document.querySelector('#yearNav').classList.add('hidden');
+        document.querySelector('#openMobileNav').classList.add('hidden');
+    }
+
+    function mobileNavHandler(dataset) {
+        closeMobileNav();
+        navHandler(dataset);
+    }
+
+    function navHandler(dataset) {
+        var action = dataset['action'];
+        var jump = dataset['jump'];
+
+        var current = document.querySelector('#hboLoveLifeTimeline').dataset.current;
+
+        var prev    = document.querySelector('#'+current).dataset.prev;
+        var next    = document.querySelector('#'+current).dataset.next;
+        var restart = document.querySelector('#'+current).dataset.restart;
+        var up      = document.querySelector('#'+current).dataset.up;
+        var down    = document.querySelector('#'+current).dataset.down;
+
+        function pauseVideo() {
+            // if video then pause it
+            var hasVideo = document.querySelector('#'+current+ ' .bg-video');
+            if (hasVideo) {
+                hasVideo.pause();
+            }
+        }
+
+        function playVideo(current) {
+            // if video then start it
+            var hasVideo = document.querySelector('#'+current+ ' .bg-video');
+            if (hasVideo) {
+                hasVideo.play();
+            }
+        }
+
+        function setCurrentCard(card) {
+            document.querySelector('#hboLoveLifeTimeline').dataset.current = card;
+            playVideo(card);
+        }
+
+        function setNavColor(card) {
+            var color = colorData[card];
+            var yearNav = document.querySelector('#yearNav');
+            yearNav.classList.remove('white', 'black');
+            yearNav.classList.add(color);
+
+            var mobileNav = document.querySelector('#openMobileNav');
+            mobileNav.classList.remove('white', 'black');
+            mobileNav.classList.add(color);
+        }
+
+        function setCurrentYear(card) {
+            var years = document.querySelectorAll('.year-nav .nav');
+            for (var i = 0; i < years.length; i++) {
+                years[i].classList.remove('current-year');
+            }
+            document.querySelector('.year-nav .nav[data-jump="' + card + '"]').classList.add('current-year');
+
+            var mobileYear = document.querySelector('.current-year span').innerText;
+            document.querySelector('#openMobileNav').innerText = mobileYear;
+        }
+
+        if (action == 'jump' && current != jump) {
+            pauseVideo();
+            var tl = new TimelineMax();
+            tl.add('start', 0.5);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 0.5, {opacity: 0, ease: Power1.easeInOut});
+            tl.call(setCurrentCard, [jump]);
+            tl.to('#'+current, 1, {opacity: 0, ease: Power1.easeInOut}, 'start');
+            tl.fromTo('#'+jump, 1, {opacity: 0, x: 0}, {opacity: 1, ease: Power1.easeInOut}, 'start');
+            tl.call(setNavColor, [jump]);
+            tl.call(setCurrentYear, [jump]);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 1, {opacity: 1, ease: Power1.easeInOut});
+            tl.set('#'+current, {opacity: 1, x: '100vw'}, 'start+=2'); // reset position and opacity
+        }
+
+        if (action == 'restart') {
+            pauseVideo();
+            var tl = new TimelineMax();
+            tl.add('start');
+            tl.add('start', 0.5);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 0.5, {opacity: 0, ease: Power1.easeInOut});
+            tl.call(setCurrentCard, [restart]);
+            tl.to('#'+current, 1, {opacity: 0, ease: Power1.easeInOut}, 'start');
+            tl.fromTo('#'+restart, 1, {opacity: 0, x: 0}, {opacity: 1, ease: Power1.easeInOut}, 'start');
+            tl.call(setNavColor, [restart]);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 1, {opacity: 1, ease: Power1.easeInOut});
+            tl.set('#'+current, {opacity: 1, x: '100vw'}, 'start+=2'); // reset position and opacity
+        }
+
+        if (action == 'up') {
+            pauseVideo();
+            var tl = new TimelineMax();
+            tl.add('start', 0.5);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 0.5, {opacity: 0, ease: Power1.easeInOut});
+            tl.call(setCurrentCard, [up]);
+            tl.to('#'+current, 1, {opacity: 0, ease: Power1.easeInOut}, 'start');
+            tl.fromTo('#'+up, 1, {opacity: 0, x: 0}, {opacity: 1, ease: Power1.easeInOut}, 'start');
+            tl.call(setNavColor, [up]);
+            tl.call(setCurrentYear, [up]);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 1, {opacity: 1, ease: Power1.easeInOut});
+            tl.set('#'+current, {opacity: 1, x: '100vw'}, 'start+=2'); // reset position and opacity
+        }
+
+        if (action == 'down') {
+            pauseVideo();
+            var tl = new TimelineMax();
+            tl.add('start', 0.5);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 0.5, {opacity: 0, ease: Power1.easeInOut});
+            tl.call(setCurrentCard, [down]);
+            tl.to('#'+current, 1, {opacity: 0, ease: Power1.easeInOut}, 'start');
+            tl.fromTo('#'+down, 1, {opacity: 0, x: 0}, {opacity: 1, ease: Power1.easeInOut}, 'start');
+            tl.call(setNavColor, [down]);
+            tl.call(setCurrentYear, [down]);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 1, {opacity: 1, ease: Power1.easeInOut});
+            tl.set('#'+current, {opacity: 1, x: '100vw'}, 'start+=2'); // reset position and opacity
+        }
+
+        if (action == 'prev') {
+            pauseVideo();
+            var tl = new TimelineMax();
+            tl.add('start', 0.5);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 0.5, {opacity: 0, ease: Power1.easeInOut});
+            tl.call(setCurrentCard, [prev]);
+            tl.to('#'+current, 1, {x: '100vw', ease: Power1.easeInOut}, 'start');
+            tl.fromTo('#'+prev, 1, {x: '-100vw'}, {x: 0, ease: Power1.easeInOut}, 'start');
+            tl.call(setNavColor, [prev]);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 1, {opacity: 1, ease: Power1.easeInOut});
+            tl.set('#'+current, {opacity: 1, x: '100vw'}, 'start+=2'); // reset position and opacity
+        }
+
+        if (action == 'next') {
+            pauseVideo();
+            var tl = new TimelineMax();
+            tl.add('start', 0.5);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 0.5, {opacity: 0, ease: Power1.easeInOut});
+            tl.call(setCurrentCard, [next]);
+            tl.to('#'+current, 1, {x: '-100vw', ease: Power1.easeInOut}, 'start');
+            tl.fromTo('#'+next, 1, {x: '100vw'}, {x: 0, ease: Power1.easeInOut}, 'start');
+            tl.call(setNavColor, [next]);
+            tl.to('.mobile-year-selector, .year-nav, .card-nav .nav', 1, {opacity: 1, ease: Power1.easeInOut});
+            tl.set('#'+current, {opacity: 1, x: '100vw'}, 'start+=2'); // reset position and opacity
+        }
+    }
+
+    function showFirstCard() {
+        document.querySelector('#hboLoveLifeTimeline').dataset.current = 'home';
+        document.querySelector('#home .bg-video').play();
+    }
+
+    function setMobileVideos() {
+        if (window.innerWidth <= 1080) {
+            document.querySelector('#episode1card3 video').setAttribute('src', cdn+'episode1-card3-mobile.mp4');
+            document.querySelector('#episode2card1 video').setAttribute('src', cdn+'episode2-card1-mobile.mp4');
+            document.querySelector('#episode2card3 video').setAttribute('src', cdn+'episode2-card3-mobile.mp4');
+            document.querySelector('#episode3card2 video').setAttribute('src', cdn+'episode3-card2-mobile.mp4');
+            document.querySelector('#episode4card6 video').setAttribute('src', cdn+'episode4-card6-mobile.mp4');
+            document.querySelector('#episode5card3 video').setAttribute('src', cdn+'episode5-card3-mobile.mp4');
+            document.querySelector('#episode5card4 video').setAttribute('src', cdn+'episode5-card4-mobile.mp4');
+            document.querySelector('#episode7card5 video').setAttribute('src', cdn+'episode7-card5-mobile.mp4');
+            document.querySelector('#episode8card2 video').setAttribute('src', cdn+'episode8-card2-mobile.mp4');
+            document.querySelector('#episode9card2 video').setAttribute('src', cdn+'episode9-card2-mobile.mp4');
+            document.querySelector('#episode10card4 video').setAttribute('src', cdn+'episode10-card4-mobile.mp4');
+        }
+    }
+
+    function setPlatform() {
+        var timeline = document.querySelector('#hboLoveLifeTimeline')
+        timeline.classList.remove('mobile', 'small-mobile');
+
+        if (window.innerWidth <= 600) {
+            timeline.classList.add('small-mobile');
+            return;
+        }
+
+        if (window.innerWidth <= 1080) {
+            timeline.classList.add('mobile');
+            return;
+        }
+    }
+
+    function resetCards() {
+        var current = document.querySelector('#hboLoveLifeTimeline').dataset.current;
+        TweenMax.set('.card:not(#'+current+')', {x: '100vw'});
+        TweenMax.set('.home:not(#'+current+')', {x: '100vw'});
+    }
+
+    var resizeTimer;
+    function resizeHandler() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function () {
+            resetCards();
+            setPlatform();
+        }, 250);
+    }
+
+    var colorData = {
+        "episode1card0" : "black",
+        "episode1card1" : "white",
+        "episode1card2" : "black",
+        "episode1card3" : "white",
+        "episode1card4" : "white",
+
+        "episode2card0" : "black",
+        "episode2card1" : "white",
+        "episode2card2" : "white",
+        "episode2card3" : "white",
+        "episode2card4" : "white",
+
+        "episode3card0" : "black",
+        "episode3card1" : "white",
+        "episode3card2" : "white",
+        "episode3card3" : "white",
+        "episode3card4" : "white",
+        "episode3card5" : "white",
+
+        "episode4card0" : "black",
+        "episode4card1" : "white",
+        "episode4card2" : "white",
+        "episode4card3" : "white",
+        "episode4card4" : "white",
+        "episode4card5" : "white",
+        "episode4card6" : "white",
+        "episode4card7" : "black",
+        "episode4card8" : "white",
+        "episode4card9" : "white",
+        "episode4card10" : "white",
+        "episode4card11" : "white",
+
+        "episode5card0" : "black",
+        "episode5card1" : "white",
+        "episode5card2" : "white",
+        "episode5card3" : "white",
+        "episode5card4" : "white",
+        "episode5card5" : "white",
+
+        "episode7card0" : "black",
+        "episode7card1" : "white",
+        "episode7card2" : "white",
+        "episode7card3" : "white",
+        "episode7card4" : "white",
+        "episode7card5" : "white",
+        "episode7card6" : "white",
+
+        "episode8card0" : "white",
+        "episode8card1" : "white",
+        "episode8card2" : "white",
+        "episode8card3" : "white",
+        "episode8card4" : "white",
+        "episode8card5" : "black",
+        "episode8card6" : "white",
+        "episode8card7" : "white",
+
+        "episode9card0" : "black",
+        "episode9card1" : "white",
+        "episode9card2" : "white",
+        "episode9card3" : "white",
+        "episode9card4" : "white",
+        "episode9card5" : "white",
+        "episode9card6" : "white",
+
+        "episode10card0" : "black",
+        "episode10card1" : "white",
+        "episode10card2" : "white",
+        "episode10card3" : "white",
+        "episode10card4" : "white",
+        "episode10card5" : "white",
+        "episode10card6" : "white",
+
+    };
+
+}(window));
+

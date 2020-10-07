@@ -1,0 +1,66 @@
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+var googleAnalytics = (function(){
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+    ga('create', 'UA-4245545-1', 'auto');
+    ga('send', 'pageview');
+}());
+
+module.exports = googleAnalytics;
+},{}],2:[function(require,module,exports){
+var $ = require('jquery');
+/*
+CSS Browser Selector v0.4.0 (Nov 02, 2010)
+Rafael Lima (http://rafael.adm.br)
+http://rafael.adm.br/css_browser_selector
+License: http://creativecommons.org/licenses/by/2.5/
+Contributors: http://rafael.adm.br/css_browser_selector#contributors
+*/
+function css_browser_selector(u){var ua=u.toLowerCase(),is=function(t){return ua.indexOf(t)>-1},g='gecko',w='webkit',s='safari',o='opera',m='mobile',h=document.documentElement,b=[(!(/opera|webtv/i.test(ua))&&/msie\s(\d)/.test(ua))?('ie ie'+RegExp.$1):is('firefox/2')?g+' ff2':is('firefox/3.5')?g+' ff3 ff3_5':is('firefox/3.6')?g+' ff3 ff3_6':is('firefox/3')?g+' ff3':is('gecko/')?g:is('opera')?o+(/version\/(\d+)/.test(ua)?' '+o+RegExp.$1:(/opera(\s|\/)(\d+)/.test(ua)?' '+o+RegExp.$2:'')):is('konqueror')?'konqueror':is('blackberry')?m+' blackberry':is('android')?m+' android':is('chrome')?w+' chrome':is('iron')?w+' iron':is('applewebkit/')?w+' '+s+(/version\/(\d+)/.test(ua)?' '+s+RegExp.$1:''):is('mozilla/')?g:'',is('j2me')?m+' j2me':is('iphone')?m+' iphone':is('ipod')?m+' ipod':is('ipad')?m+' ipad':is('mac')?'mac':is('darwin')?'mac':is('webtv')?'webtv':is('win')?'win'+(is('windows nt 6.0')?' vista':''):is('freebsd')?'freebsd':(is('x11')||is('linux'))?'linux':'','js']; c = b.join(' '); h.className += ' '+c; return c;};
+
+$(function(){
+    css_browser_selector(navigator.userAgent);
+});
+},{"jquery":"jquery"}],3:[function(require,module,exports){
+/**
+ * jQuery Live Query v1.1.1
+ */
+eval(function(p,a,c,k,e,r){e=function(c){return(c<a?'':e(parseInt(c/a)))+((c=c%a)>35?String.fromCharCode(c+29):c.toString(36))};if(!''.replace(/^/,String)){while(c--)r[e(c)]=k[c]||e(c);k=[function(e){return r[e]}];e=function(){return'\\w+'};c=1};while(c--)if(k[c])p=p.replace(new RegExp('\\b'+e(c)+'\\b','g'),k[c]);return p}('(4($){$.G($.7,{3:4(b,c,d){f e=2,q;5($.H(b))d=c,c=b,b=w;$.8($.3.9,4(i,a){5(e.j==a.j&&e.k==a.k&&b==a.g&&(!c||c.$6==a.7.$6)&&(!d||d.$6==a.l.$6))m(q=a)&&s});q=q||P $.3(2.j,2.k,b,c,d);q.t=s;q.o();m 2},Q:4(b,c,d){f e=2;5($.H(b))d=c,c=b,b=w;$.8($.3.9,4(i,a){5(e.j==a.j&&e.k==a.k&&(!b||b==a.g)&&(!c||c.$6==a.7.$6)&&(!d||d.$6==a.l.$6)&&!2.t)$.3.u(a.I)});m 2}});$.3=4(a,b,c,d,e){2.j=a;2.k=b;2.g=c;2.7=d;2.l=e;2.p=[];2.t=s;2.I=$.3.9.D(2)-1;d.$6=d.$6||$.3.E++;5(e)e.$6=e.$6||$.3.E++;m 2};$.3.R={u:4(){f b=2;5(2.g)2.p.S(2.g,2.7);x 5(2.l)2.p.8(4(i,a){b.l.y(a)});2.p=[];2.t=J},o:4(){5(2.t)m;f b=2;f c=2.p,v=$(2.j,2.k),F=v.T(c);2.p=v;5(2.g){F.U(2.g,2.7);5(c.z>0)$.8(c,4(i,a){5($.A(a,v)<0)$.V.K(a,b.g,b.7)})}x{F.8(4(){b.7.y(2)});5(2.l&&c.z>0)$.8(c,4(i,a){5($.A(a,v)<0)b.l.y(a)})}}};$.G($.3,{E:0,9:[],h:[],B:s,C:W,L:4(){5($.3.B&&$.3.h.z){f a=$.3.h.z;X(a--)$.3.9[$.3.h.Y()].o()}},Z:4(){$.3.B=s},M:4(){$.3.B=J;$.3.o()},N:4(){$.8(O,4(i,n){5(!$.7[n])m;f a=$.7[n];$.7[n]=4(){f r=a.y(2,O);$.3.o();m r}})},o:4(b){5(b!=w){5($.A(b,$.3.h)<0)$.3.h.D(b)}x $.8($.3.9,4(a){5($.A(a,$.3.h)<0)$.3.h.D(a)});5($.3.C)10($.3.C);$.3.C=11($.3.L,12)},u:4(b){5(b!=w)$.3.9[b].u();x $.8($.3.9,4(a){$.3.9[a].u()})}});$.3.N(\'13\',\'14\',\'15\',\'16\',\'17\',\'18\',\'19\',\'1a\',\'1b\',\'1c\',\'1d\',\'K\',\'1e\');$(4(){$.3.M()})})(1f);',62,78,'||this|livequery|function|if|lqguid|fn|each|queries||||||var|type|queue||selector|context|fn2|return||run|elements|||false|stopped|stop|els|undefined|else|apply|length|inArray|running|timeout|push|guid|nEls|extend|isFunction|id|true|remove|checkQueue|play|registerPlugin|arguments|new|expire|prototype|unbind|not|bind|event|null|while|shift|pause|clearTimeout|setTimeout|20|append|prepend|after|before|wrap|attr|removeAttr|addClass|removeClass|toggleClass|empty|html|jQuery'.split('|'),0,{}));
+},{}],4:[function(require,module,exports){
+/**
+ * New Login Behavior, Spring 2011
+ */
+
+var $  =  require('jquery');
+window.jQuery = $;
+window.$ = $;
+
+require('../../../../assets/app/shared/bronto/js/modules/analytics/google_analytics.js');
+require('../../../../assets/app/shared/bronto/js/plugins/css_browser_selector.js');
+require('../../../../assets/app/shared/bronto/js/plugins/jquery/jquery.livequery.min.js');
+
+$(function() {
+
+	/* Check if image is too large */
+	if ($('table.logo').length) {
+		$('table.logo img').load(function() {
+			if ($(this).width() > 530) {
+				$(this).width(480);
+			}
+		});
+	}
+
+	/* Remove blank error fields */
+	$('form span.error').each(function() {
+		if (!$(this).text().length) {
+			$(this).remove();
+		}
+	});
+
+	/* Focus on the first input field */
+	$('form :input:first').focus();
+});
+
+},{"../../../../assets/app/shared/bronto/js/modules/analytics/google_analytics.js":1,"../../../../assets/app/shared/bronto/js/plugins/css_browser_selector.js":2,"../../../../assets/app/shared/bronto/js/plugins/jquery/jquery.livequery.min.js":3,"jquery":"jquery"}]},{},[4]);

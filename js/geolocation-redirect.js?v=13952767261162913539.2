@@ -1,0 +1,30 @@
+$(function() {
+  var GeolocationRedirect_GeolocateTimer = setTimeout(function() {
+      $.ajax({
+        url: "https://aracahq.com/geolocate",
+        success: function(data) {
+          if(checkAllowed(data.country.iso_code)) {
+          } else {
+            if(checkWhitelist(data.traits.ip_address)) {} else { doRedirect('https://www.hbostore.co.uk/'); }
+          }
+        },
+        dataType: 'json'
+      });
+      clearTimeout(GeolocationRedirect_GeolocateTimer);
+    }, 1);
+  function checkAllowed(code) {
+    var allowedCountryCodes = ['US', 'CA'];
+    if(jQuery.inArray(code, allowedCountryCodes) != -1) {
+      return true;
+    }
+  }
+  function checkWhitelist(ipaddress) {
+    var allowedIPAddresses = [];
+    if(jQuery.inArray(ipaddress, allowedIPAddresses) != -1) {
+      return true;
+    }
+  }
+  function doRedirect(url) {
+    window.location = url;
+  }
+});

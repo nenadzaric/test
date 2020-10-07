@@ -1,0 +1,199 @@
+var consentExpiration = 30;
+
+$(function() {
+  // Initiate Consent Manager
+  window.ConsentManager = "Initiated";
+
+  // Call The MaxMind Javascript Country API If The Continent
+  // Code Isn't Already Determined & Stored
+  if(!Cookies.get('consent_continent_code')) {
+    geoip2.country(
+      function(geoipResponse) {
+        Cookies.set('consent_continent_code', geoipResponse.continent.code);
+      },
+      function() {
+        Cookies.set('consent_continent_code', 'UNKNOWN');
+      }
+    );
+  }
+
+  var waitForContinentCodeCookie = setInterval(function() {
+    if(Cookies.get('consent_continent_code') != undefined) {
+      if(Cookies.get('consent_continent_code') === 'EU') {
+        if(!Cookies.get('consent_manager_state')) {
+          Cookies.set('consent_manager_state', 'unset');
+          $('.consent-management-dialog.mini').show("slide", { direction: "down" }, 400);
+        } else {
+          if(Cookies.get('consent_manager_state') == "unset") {
+            $('.consent-management-dialog.mini').show("slide", { direction: "down" }, 400);
+          }
+        }
+      }
+
+      clearInterval(waitForContinentCodeCookie);
+    }
+  }, 1000);
+
+  var sessionID = Cookies.get('_shopify_s');
+
+  if(Cookies.get('consent_manager_state') == "set") {
+    if(Cookies.get('consent_manager_analytics') == "1") {
+      $('.consent-management-dialog.extended #ConsentForm input[name="analytics_consent"]').attr('checked', 'checked');
+    }
+    if(Cookies.get('consent_manager_functionality') == "1") {
+      $('.consent-management-dialog.extended #ConsentForm input[name="functionality_consent"]').attr('checked', 'checked');
+    }
+    if(Cookies.get('consent_manager_marketing') == "1") {
+      $('.consent-management-dialog.extended #ConsentForm input[name="marketing_consent"]').attr('checked', 'checked');
+    }
+    if(Cookies.get('consent_manager_targeting') == "1") {
+      $('.consent-management-dialog.extended #ConsentForm input[name="targeting_consent"]').attr('checked', 'checked');
+    }
+    if(Cookies.get('consent_manager_do_not_sell_my_personal_information') == "1") {
+      $('.consent-management-dialog.extended #ConsentForm input[name="do_not_sell_my_personal_information"]').attr('checked', 'checked');
+    }
+  }
+
+  $('.consent-management-dialog.mini #ConsentForm').submit(function(event) {
+    event.preventDefault();
+
+    $('.consent-management-dialog.mini #ConsentForm input[type="submit"]').attr('disabled', 'disabled');
+
+    $.post(
+      $('.consent-management-dialog.mini #ConsentForm').attr('data-post-url'),
+      {
+        'session_id': sessionID,
+        'customer_id': $(this).find('input[name="customer_id"]').val(),
+        'platform_code': 'shopify',
+        'frontend_identifier': $(this).find('input[name="frontend_identifier"]').val(),
+        'analytics_consent': 1,
+        'functionality_consent': 1,
+        'marketing_consent': 1,
+        'targeting_consent': 1,
+        'do_not_sell_my_personal_information': 0
+      },
+      function(data) {
+        $('.consent-management-dialog.mini').hide("slide", { direction: "down" }, 400);
+        $('.consent-management-dialog.mini #ConsentForm input[type="submit"]').removeAttr('disabled');
+      }
+    );
+
+    Cookies.set('consent_manager_state', 'set', { expires: consentExpiration });
+    Cookies.set('consent_manager_analytics', '1', { expires: consentExpiration });
+    Cookies.set('consent_manager_functionality', '1', { expires: consentExpiration });
+    Cookies.set('consent_manager_marketing', '1', { expires: consentExpiration });
+    Cookies.set('consent_manager_targeting', '1', { expires: consentExpiration });
+    Cookies.set('consent_manager_do_not_sell_my_personal_information', '0', { expires: consentExpiration });
+
+  });
+
+  $('.consent-management-dialog.extended #ConsentForm').submit(function(event) {
+    event.preventDefault();
+
+    $('.consent-management-dialog.extended #ConsentForm input[type="submit"]').attr('disabled', 'disabled');
+
+    var analytics_consent = 0;
+    var functionality_consent = 0;
+    var marketing_consent = 0;
+    var targeting_consent = 0;
+    var do_not_sell_my_personal_information = 0;
+
+    if ($('input[name="analytics_consent"]').is(":checked")) {
+      var analytics_consent = 1;
+    }
+    if ($('input[name="functionality_consent"]').is(":checked")) {
+      var functionality_consent = 1;
+    }
+    if ($('input[name="marketing_consent"]').is(":checked")) {
+      var marketing_consent = 1;
+    }
+    if ($('input[name="targeting_consent"]').is(":checked")) {
+      var targeting_consent = 1;
+    }
+    if ($('input[name="do_not_sell_my_personal_information"]').is(":checked")) {
+      var do_not_sell_my_personal_information = 1;
+    }
+
+    $.post(
+      $('.consent-management-dialog.extended #ConsentForm').attr('data-post-url'),
+      {
+        'session_id': sessionID,
+        'customer_id': $(this).find('input[name="customer_id"]').val(),
+        'platform_code': 'shopify',
+        'frontend_identifier': $(this).find('input[name="frontend_identifier"]').val(),
+        'analytics_consent': analytics_consent,
+        'functionality_consent': functionality_consent,
+        'marketing_consent': marketing_consent,
+        'targeting_consent': targeting_consent,
+        'do_not_sell_my_personal_information': do_not_sell_my_personal_information
+      },
+      function(data) {
+        $('.consent-management-dialog.extended').hide();
+        $('.consent-management-dialog.extended #ConsentForm input[type="submit"]').removeAttr('disabled');
+      }
+    );
+
+    Cookies.set('consent_manager_state', 'set', { expires: consentExpiration });
+    Cookies.set('consent_manager_analytics', analytics_consent, { expires: consentExpiration });
+    Cookies.set('consent_manager_functionality', functionality_consent, { expires: consentExpiration });
+    Cookies.set('consent_manager_marketing', marketing_consent, { expires: consentExpiration });
+    Cookies.set('consent_manager_targeting', targeting_consent, { expires: consentExpiration });
+    Cookies.set('consent_manager_do_not_sell_my_personal_information', do_not_sell_my_personal_information, { expires: consentExpiration });
+
+  });
+
+  //Accordion
+  $('.accordion.enabled a').click(function(event) {
+      var dropDown = $(this).closest('li').find('p');
+      $(this).closest('.accordion').find('p').not(dropDown).slideUp();
+      if ($(this).hasClass('active')) {
+          $(this).removeClass('active');
+      } else {
+          $(this).closest('.accordion').find('a.active').removeClass('active');
+          $(this).addClass('active');
+      }
+      dropDown.stop(false, true).slideToggle();
+      event.preventDefault();
+  });
+
+  //Extended Consent Manager 'Back' Button
+  $('.consent-management-dialog.extended #ConsentForm .navigate-back').click(function(event) {
+    event.preventDefault();
+
+    $('.consent-management-dialog.extended').hide();
+
+    if(Cookies.get('consent_continent_code') === 'EU') {
+      $('.consent-management-dialog.mini').show("slide", { direction: "down" }, 400);
+    }
+  });
+
+  //Extended Consent Manager Button
+  $('.consent-management-dialog.mini #ConsentForm [data-consent-option="manage-consent"]').click(function(event) {
+    event.preventDefault();
+
+    $('.consent-management-dialog.mini').hide("slide", { direction: "down" }, 400);
+    $('.consent-management-dialog.extended').show();
+  });
+
+  //Consent Manager Triggers (Apply To Any Clickable Element)
+  $('a[consent-manager-trigger]').click(function(event) {
+    event.preventDefault();
+    $('.consent-management-dialog.extended').show();
+  });
+
+  $('a[consent-management-trigger]').click(function(event) {
+    event.preventDefault();
+    $('.consent-management-dialog.extended').show();
+  });
+
+  $('a[href="#consentmanagement"]').click(function(event) {
+    event.preventDefault();
+    $('.consent-management-dialog.extended').show();
+  });
+
+  $('a[href="#consentmanagement-trigger-extended"]').click(function(event) {
+    event.preventDefault();
+    $('.consent-management-dialog.extended').show();
+  });
+
+});

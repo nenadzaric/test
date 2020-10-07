@@ -1,226 +1,78 @@
-var HBOCharmCityKingsWebsite = (function () {
 
-    var platform, currentPlatform;
-    var artOfTheRideSwiper, whoMadeMeSwiperMobile, whoMadeMeSwiperDesktop, interviewsSwiperMobile, interviewsSwiperDesktop;
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
 
-    function init() {
-        addEventListeners();
-        setPlatform();
-        // initSwipers();
-        getSiteHeight();
-    }
+	"http://www.w3.org/TR/html4/loose.dtd"> 
 
-    function addEventListeners() {
-        $(window).on('resize', emitResizeEvent);
-        $('body').on('click', '.play-button', playVideo);
-        $('body').on('click', '.js-close-modal', closeModal);
-        $('body').on('click', '.js-open-trailer', openModalTrailer);
-        $('body').on('click', '.js-stop-bubbling', stopBubbling);
-        $('body').on('click', '.js-track', trackedClickHandler);
-        $('body').on('click', '.js-toggle-mute', toggleMuteHandler);
+<html> 
 
-        // videos
-        $('video.watch-for-end').on('ended', videoEndHandler);
-    }
+<head> 
 
-    function stopBubbling(evt) {
-        evt.stopPropagation();
-    }
+	<meta name="geo-filter" content="true" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1.0"/>
 
-    function toggleMuteHandler() {
-        $(this).toggleClass('has-sound');
-        $('#trailerBg').prop("muted", !$('#trailerBg').prop("muted"));
+	<title>HBO NOW</title> 
 
-    }
+	<style type="text/css"> 
 
-    function trackedClickHandler(evt) {
-        evt.preventDefault();
-        var text = $(this).data('text');
-        var url = $(this).attr('href');
-        parent.dataLayer.push({
-            'event': 'link_click',
-            'text': text,
-            'url': url
-        });
-        if ($(this).hasClass('js-external-link')) {
-            window.open(url);
-        } else {
-            window.location = url;
-        }
-    }
+	html{height:100%;overflow:auto;} 
 
-    function resizeHandler(evt) {
-        setPlatform();
-        if (platform !== currentPlatform) {
-            currentPlatform = platform;
-            // updateSwipers();
-        }
-        getSiteHeight();
-    }
+	body{background-color:#000;color:#CCC;font-family:Trebuchet MS, Helvetica, sans-serif;height:100%;text-align:left;} 
 
-    function getSiteHeight() {
-        var siteHeight = $('body').height();
-        window.parent.postMessage(['HBOCharmCityKingsIframeHeight', siteHeight], '*');
-    }
+	#content{
 
-    function setPlatform() {
-        if (window.innerWidth <= 1080) {
-            platform = 'mobile';
-        } else {
-            platform = 'desktop';
-        }
-    }
+		margin:150px auto;
 
-    function initSwipers() {
-        // ART OF THE RIDE
-        artOfTheRideSwiper = new Swiper('.art-of-the-ride-swiper', {
-            init: false,
-            navigation: {
-                nextEl: '.art-of-the-ride-swiper .swiper-button-next',
-                prevEl: '.art-of-the-ride-swiper .swiper-button-prev',
-            },
-        });
+		width: 100%;
+		max-width: 1100px;
+		padding: 20px 20px;
+		box-sizing: border-box;
+	} 
+	a{color:#2bb0d8; text-decoration: none;}
+	h2{font-size:larger;} 
 
-        if (platform == 'mobile') {
-            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesMobile);
-        } else {
-            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesDesktop);
-        }
-        artOfTheRideSwiper.init();
-        artOfTheRideSwiper.on('slideChange', onPosterSwipe);
+	h3{font-size:small;} 
+	li{padding-bottom:20px;}
 
-        // WHO MADE ME
-        whoMadeMeSwiperMobile = new Swiper('.who-made-me-swiper-mobile', {
-            navigation: {
-                nextEl: '.who-made-me-swiper-mobile .swiper-button-next',
-                prevEl: '.who-made-me-swiper-mobile .swiper-button-prev',
-            },
-        });
-        whoMadeMeSwiperMobile.on('slideChange', onVideoSwipe);
+	#instructions{
+		padding-top:1rem;
+	}
+</style> 
 
-        whoMadeMeSwiperDesktop = new Swiper('.who-made-me-swiper-desktop', {
-            slidesPerView: 3,
-            centeredSlides: true,
-            loop: true,
-            navigation: {
-                nextEl: '.who-made-me-swiper-desktop .swiper-button-next',
-                prevEl: '.who-made-me-swiper-desktop .swiper-button-prev',
-            },
-        });
-        whoMadeMeSwiperDesktop.on('slideChange', onVideoSwipe);
+</head> 
 
-        // INTERVIEWS
-        interviewsSwiperMobile = new Swiper('.interviews-swiper-mobile', {
-            navigation: {
-                nextEl: '.interviews-swiper-mobile .swiper-button-next',
-                prevEl: '.interviews-swiper-mobile .swiper-button-prev',
-            },
-        });
-        interviewsSwiperMobile.on('slideChange', onVideoSwipe);
+<body> 
 
-        interviewsSwiperDesktop = new Swiper('.interviews-swiper-desktop', {
-            slidesPerView: 3,
-            centeredSlides: true,
-            loop: true,
-            navigation: {
-                nextEl: '.interviews-swiper-desktop .swiper-button-next',
-                prevEl: '.interviews-swiper-desktop .swiper-button-prev',
-            },
-        });
-        interviewsSwiperDesktop.on('slideChange', onVideoSwipe);
+	<div id="content"> 
 
-        getSiteHeight();
-    }
+		<img width="238" src="image/logo.png" alt="HBO NOW" /> 
 
-    function updateSwipers() {
-        artOfTheRideSwiper.removeAllSlides();
-        if (platform == 'mobile') {
-            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesMobile);
-            whoMadeMeSwiperMobile.update();
-            interviewsSwiperMobile.update();
-        } else {
-            artOfTheRideSwiper.appendSlide(artOfTheRideSlidesDesktop);
-            whoMadeMeSwiperDesktop.update();
-            interviewsSwiperDesktop.update();
-        }
-        artOfTheRideSwiper.update();
-        getSiteHeight();
-    }
+		<br></br>
+		
+		<h1>Not in service area.</h1> 
+		
+		<h2>HBO NOW is only supported in the U.S. and certain U.S. territories.</h2> 
+		
+		<div id="instructions">
+		
+		<h2>If you are in the service area and believe you've received this message in error, please follow the steps below:</h2> 
 
-    function playVideo(evt) {
-        var $video = $(this).find('video');
-        var video = $video[0];
-        video.play();
-        $(this).addClass('is-playing');
+		<ol type="1">
+		
+			<li>If you're using a VPN or web proxy, try disabling it so that your IP address is not blocked.</li>
 
-        var videoDuration = video.duration;
-        var progressDuration = videoDuration * 1000;
-        var $progressBar = $video.siblings('.video-progress');
-        $progressBar.show().find('span').animate({width: '100%'}, progressDuration);
-    }
+			<li>If you still get a service area message, email us at <a href="mailto:support@hbonow.com?subject=HBO NOW Not in Service Area Message">support@hbonow.com</a></li>
 
-    function videoEndHandler(evt) {
-        $('.play-button').removeClass('is-playing');
-        $('.video-progress').hide().find('span').css({width: 0});
-    }
+		</ol>
 
-    function onVideoSwipe(evt) {
-        var $swiperVideos = this.$el.find('video');
-        $swiperVideos.each(function () {
-            $(this)[0].pause();
-            $(this)[0].currentTime = 0;
-        });
-        videoEndHandler();
-    }
+	</div>
 
-    function onPosterSwipe(evt) {
-        parent.dataLayer.push({
-            'event': 'cck_poster_view'
-        });
-    }
+		<br></br>
 
-    function openModalTrailer() {
-        parent.dataLayer.push({
-            'event': 'video_start',
-            'video_title': 'Trailer'
-        });
+		<p>&copy; 2018 Home Box Office, Inc. All Rights Reserved.</p>
 
-        var iframe = '<iframe width="560" height="315" src="https://www.youtube.com/embed/8Cvrs-BCs6o?autoplay=1&playsinline=1&modestbranding=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>';
-        $('.modal-trailer-iframe').append(iframe);
-        $('.modal-trailer').show();
-        $('body').addClass('has-modal');
-        $('#trailerBg')[0].pause();
-    }
 
-    function closeModal() {
-        $('.modal-trailer-iframe').empty();
-        $('.modal').hide();
-        $('body').removeClass('has-modal');
-        $('#trailerBg')[0].play();
-    }
+	</div> 
 
-    var resizeTimer;
-    function emitResizeEvent() {
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(resizeHandler, 250);
-    }
+</body> 
 
-    var artOfTheRideSlidesMobile = [
-        '<div class="swiper-slide" data-text="Poster 1"><img src="images/art-of-the-ride/fpo-poster-mobile-portrait.jpg" alt="Poster image of..."></div>',
-        '<div class="swiper-slide" data-text="Poster 2"><img src="images/art-of-the-ride/fpo-poster-mobile-portrait.jpg" alt="Poster image of..."></div>',
-        '<div class="swiper-slide" data-text="Poster 3"><img src="images/art-of-the-ride/fpo-poster-mobile-portrait.jpg" alt="Poster image of..."></div>'
-    ];
-
-    var artOfTheRideSlidesDesktop = [
-        '<div class="swiper-slide" data-text="Poster 1"><img src="images/art-of-the-ride/fpo-poster-desktop-square.jpg" alt="Poster image of..."></div>',
-        '<div class="swiper-slide" data-text="Poster 2"><img src="images/art-of-the-ride/fpo-poster-desktop-square.jpg" alt="Poster image of..."></div>',
-        '<div class="swiper-slide" data-text="Poster 3"><img src="images/art-of-the-ride/fpo-poster-desktop-square.jpg" alt="Poster image of..."></div>'
-    ];
-
-    return {
-        init: init
-    }
-
-})();
-
-document.addEventListener("DOMContentLoaded", HBOCharmCityKingsWebsite.init);
+</html>

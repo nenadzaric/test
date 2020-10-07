@@ -1,0 +1,68 @@
+//***************************************************************
+// PDP Reviews Badge Click Handler
+//***************************************************************
+// This will ensure that when the PDP Reviews Badge is clicked,
+// the reviews section is fully visible allowing most solutions
+// to scroll to the reviews, if that behavior exists on the
+// current reviews solution.
+//***************************************************************
+$(window).on('load', function() {
+  var checkPDPReviewsBadge = setInterval(function() {
+
+    var element_PDPReviewsBadge = $('.stamped-product-reviews-badge');
+
+    if(!element_PDPReviewsBadge.length) {
+      return;
+    }
+
+    clearInterval(checkPDPReviewsBadge);
+
+    var element_ReviewsSectionExpander1 = $('#product-accordion [aria-controls="ui-id-4"]');
+    if(element_ReviewsSectionExpander1.length) {
+      element_PDPReviewsBadge.click(function() {
+        if(element_ReviewsSectionExpander1.attr('aria-expanded') == 'false') {
+          element_ReviewsSectionExpander1.trigger('click');
+        }
+      });
+    }
+
+    var element_ReviewsSectionExpander2 = $('.product-tabs ul.nav.nav-tabs li a[data-toggle="tab"][href="#collapse-tab2"]');
+    if(element_ReviewsSectionExpander2.length) {
+      element_PDPReviewsBadge.click(function() {
+        element_ReviewsSectionExpander2.trigger('click');
+        setTimeout(function(){
+          $('html, body').animate({
+              scrollTop: (element_ReviewsSectionExpander2.offset().top)
+          },500);
+        }, 100);
+      });
+    }
+
+    var element_ReviewsSectionExpander3 = $('.more_info_block ul.nav.nav-tabs li a[data-toggle="tab"][href="#idTab4"]');
+    if(element_ReviewsSectionExpander3.length) {
+      element_PDPReviewsBadge.click(function() {
+        element_ReviewsSectionExpander3.trigger('click');
+      });
+    }
+
+    var element_ReviewsSectionExpander4 = $('#tabs-information ul.nav.nav-tabs li a[data-toggle="tab"][href="#reviews"]');
+    if(element_ReviewsSectionExpander4.length) {
+      element_PDPReviewsBadge.click(function() {
+        element_ReviewsSectionExpander4.trigger('click');
+        setTimeout(function(){
+          $('html, body').animate({
+              scrollTop: (element_ReviewsSectionExpander4.offset().top)
+          },500);
+        }, 100);
+      });
+    }
+
+    var element_ReviewsSectionExpander5 = $('#tabs ul li a[href="#tabs-3"]');
+    if(element_ReviewsSectionExpander5.length) {
+      element_PDPReviewsBadge.click(function() {
+        element_ReviewsSectionExpander5.trigger('click');
+      });
+    }
+
+  }, 100);
+});

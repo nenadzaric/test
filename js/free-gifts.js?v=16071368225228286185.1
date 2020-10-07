@@ -1,0 +1,440 @@
+/*
+ ___   ___   ________   __       ______
+/__/\ /__/\ /_______/\ /_/\     /_____/\
+\::\ \\  \ \\::: _  \ \\:\ \    \::::_\/_
+ \::\/_\ .\ \\::(_)  \ \\:\ \    \:\/___/\
+  \:: ___::\ \\:: __  \ \\:\ \____\:::._\/
+   \: \ \\::\ \\:.\ \  \ \\:\/___/\\:\ \
+ ___\__\/_\::\/_\__\/\__\/ \_____\/_\_\/  __     __
+/__/\ /__/\ /_____/\ /_/\      /_______/\/__/\ /__/\
+\::\ \\  \ \\::::_\/_\:\ \     \__.::._\/\ \::\\:.\ \
+ \::\/_\ .\ \\:\/___/\\:\ \       \::\ \  \_\::_\:_\/
+  \:: ___::\ \\::___\/_\:\ \____  _\::\ \__ _\/__\_\_/\
+   \: \ \\::\ \\:\____/\\:\/___/\/__\::\__/\\ \ \ \::\ \
+    \__\/ \::\/ \_____\/ \_____\/\________\/ \_\/  \__\/
+www.halfhelix.com
+¯\_(ツ)_/¯
+*/
+var HH = (() => {
+  let env = "development";
+  const setEnv = str => {
+    env = str;
+  };
+
+  const log = (message, level) => {
+    let show = false;
+    let color = "background: #007bff; color: rgb(255,255,255)";
+    switch (level) {
+      case "warning":
+        color = "background: #ffc107; color: rgb(255,255,255)";
+        break;
+      case "error":
+        color = "background: #dc3545; color: rgb(255,255,255)";
+        break;
+      default:
+        break;
+    }
+    if (env === "development") {
+      show = true;
+    } else if (env === "production") {
+      switch (level) {
+        case "all":
+        case "error":
+        case "warning":
+          show = true;
+          break;
+        default:
+          break;
+      }
+    }
+    if (show) {
+      if (typeof message === "string") {
+        console.log(`%c${message}`, color);
+      } else {
+        switch (level) {
+          case "error":
+            console.log(`%cERROR:`, color);
+            console.warn(message);
+          case "warning":
+            console.log(`%cWARNING:`, color);
+            console.warn(message);
+            break;
+          default:
+            console.log(message);
+            break;
+        }
+      }
+    }
+  };
+  const getCartInfo = async () => {
+    return new Promise(async (resolve, reject) => {
+      let url = `/cart.js`;
+      // HH.log(`Getting cart ...`);
+      // HH.log( url );
+      $.ajax({
+        method: "GET",
+        dataType: "json",
+        success: response => {
+          // HH.log(`Cart:`);
+          // HH.log( response );
+          resolve(response);
+        },
+        error: error => {
+          HH.log(error, "error");
+          reject(error);
+        },
+        url: url
+      });
+    });
+  };
+  const updateCart = async updates => {
+    HH.log("Updating Cart");
+    HH.log(updates);
+    return new Promise(async (resolve, reject) => {
+      $.ajax({
+        url: "/cart/update.js",
+        type: "post",
+        dataType: "json",
+        data: {
+          updates: updates
+        },
+        success: response => {
+          resolve(response);
+        },
+        error: error => {
+          HH.log(error, "error");
+          reject(error);
+        }
+      });
+    });
+  };
+  const addVariantToCart = async (variantId, quantity, properties) => {
+    return new Promise(async (resolve, reject) => {
+      let params = {
+        id: variantId,
+        properties: properties,
+        quantity: quantity
+      };
+      HH.log("New Object:");
+      HH.log(params);
+      $.ajax({
+        url: "/cart/add.js",
+        type: "post",
+        dataType: "json",
+        data: params,
+        success: response => {
+          resolve(response);
+        },
+        error: error => {
+          HH.log(error, "error");
+          reject(error);
+        }
+      });
+    });
+  };
+  const getProductInfo = handle => {
+    return new Promise(async (resolve, reject) => {
+      resolve(true);
+      /*
+      $.ajax({
+        url: "/products/"+handle+".json",
+        type: "get",
+        dataType: "json",
+        data: params,
+        success: response => {
+          resolve(response);
+        },
+        error: error => {
+          HH.log(error, "error");
+          reject(error);
+        }
+      });
+      */
+    });
+  };
+
+  const CART_UTILS = {
+    init: () => {
+      return {
+        getProductInfo: getProductInfo,
+        getCartInfo: getCartInfo,
+        updateCart: updateCart,
+        addVariantToCart: addVariantToCart
+      };
+    }
+  };
+  return {
+    CART_UTILS: CART_UTILS,
+    setEnv: setEnv,
+    log: log
+  };
+})();
+var FREE_GIFT_PLUGIN = (() => {
+  let env = "development";
+  // CART UTILS
+  let CART = HH.CART_UTILS.init();
+  let FG = {
+    freeGifts: undefined
+  };
+  const getFreeGifts = () => {
+    if (FG.freeGifts === undefined) {
+      FG.freeGifts = JSON.parse(window.localStorage.getItem("freeGifts"));
+    }
+    return FG.freeGifts;
+  };
+  const setGifts = freeGifts => {
+    if (!FG.freeGifts) {
+      if (freeGifts) {
+        FG.freeGifts = freeGifts;
+      }
+      try {
+        if (window.localStorage) {
+          window.localStorage.setItem("freeGifts", JSON.stringify(freeGifts));
+        }
+      } catch (error) {
+        HH.log(error, "error");
+      }
+      getFreeGifts();
+    }
+  };
+  const updateForm = async updates => {
+    return new Promise(async (resolve, reject) => {
+      if (Object.keys(updates).length > 0) {
+        let response;
+        try {
+          response = await CART.updateCart(updates);
+          cart = await FREE_GIFT_PLUGIN.adjustCart();
+          resolve(cart);
+        } catch (error) {
+          HH.log(error, "error");
+          reject(error);
+        }
+      } else {
+        resolve();
+      }
+    });
+  };
+  const updateVariant = async (variantId, quantity) => {
+    HH.log(`Setting ${variantId} to ${quantity}`);
+    return new Promise(async (resolve, reject) => {
+      var updates = {};
+      let response;
+      try {
+        updates[variantId] = quantity;
+        response = await updateForm(updates);
+        resolve(response);
+      } catch (error) {
+        HH.log(error, "error");
+        reject(error);
+      }
+    });
+  };
+  const adjustCart = async () => {
+    return new Promise(async (resolve, reject) => {
+      let myCart;
+      try {
+        myCart = await CART.getCartInfo();
+        HH.log("Cart");
+        HH.log(myCart);
+      } catch (error) {
+        HH.log(error, "error");
+        reject(error);
+      }
+      let freeGifts = getFreeGifts();
+      if (freeGifts.length > 0) {
+        let i0, i1, j0, j1, item, list, removeItem, properties;
+        let spectedGifts = [];
+        let cartTags = [];
+        // Geting current cart items tag list
+        i0 = 0;
+        i1 = myCart.items.length;
+        while (i0 < i1) {
+          item = myCart.items[i0];
+          if (!item.properties._isGiftBy) {
+            if (item.properties._tags) {
+              list = item.properties._tags.split(",");
+            } else {
+              HH.log("This product doesn't cointains tag list", "error");
+              HH.log();
+              // CART.getProductInfo(item.handle);
+              // reject("Cart is not updated");
+              // TODO: Get product tags and update cart using ajax
+              list = [];
+            }
+            $.each(list, function(i, listElement) {
+              if ($.inArray(listElement, cartTags) === -1) {
+                cartTags.push(listElement);
+              }
+            });
+          }
+          ++i0;
+        }
+        // Getting the full list of gift items
+        i0 = 0;
+        i1 = freeGifts.length;
+        while (i0 < i1) {
+          item = freeGifts[i0];
+          if (item.productAvailable && item.variantId) {
+            let minCartVal = item.minCartVal * 100;
+            let giftQuantity = 1; // "one_by_order"
+            if (myCart.total_price >= minCartVal) {
+              // HH.log("Cart on price");
+              // HH.log(item);
+              // HH.log(cartTags);
+              // HH.log($.inArray(item.tag, cartTags));
+              if ($.inArray(item.tag, cartTags) !== -1) {
+                spectedGifts.push({
+                  variantId: Math.floor(item.variantId),
+                  quantity: Math.floor(giftQuantity),
+                  action: "new",
+                  actionData: item.tag
+                });
+              }
+            }
+          }
+          ++i0;
+        }
+        // HH.log("spectedGifts");
+        // HH.log(spectedGifts);
+        // Matching expected list vs what is in the cart
+        i0 = 0;
+        i1 = myCart.items.length;
+        j1 = spectedGifts.length;
+        HH.log("Cart tag list:");
+        HH.log(cartTags);
+        if (j1 > 0) {
+          HH.log(`This means we are specting ${j1} gifts:`);
+          HH.log(spectedGifts);
+        } else {
+          HH.log("This means we are not specting gifts");
+        }
+        while (i0 < i1) {
+          item = myCart.items[i0];
+          if (item.properties._isGiftBy) {
+            removeItem = true;
+            j0 = 0;
+            while (j0 < j1) {
+              if (item.variant_id === spectedGifts[j0].variantId) {
+                removeItem = false;
+                if (item.quantity === spectedGifts[j0].quantity) {
+                  spectedGifts[j0].action = "OK";
+                } else {
+                  spectedGifts[j0].action = "update";
+                  spectedGifts[j0].quantity = 1;
+                }
+                break;
+              }
+              ++j0;
+            }
+            if (removeItem) {
+              removeItem = {
+                variantId: item.variant_id,
+                quantity: 0,
+                action: "update",
+                actionData: ""
+              };
+              HH.log(
+                `${item.variant_id} is not spected to be here, let's remove it`
+              );
+              HH.log(removeItem, item);
+              spectedGifts.push(removeItem);
+            }
+          }
+          ++i0;
+        }
+        // Adding and removing
+        HH.log("Lets match our cart with the following object:");
+        HH.log(spectedGifts);
+        i1 = spectedGifts.length;
+        i0 = 0;
+        let updates = {};
+        let generalCount = { news: 0, updates: 0 };
+        while (i0 < i1) {
+          item = spectedGifts[i0];
+          HH.log("-> Item: " + item.action);
+          HH.log(item);
+          switch (item.action) {
+            case "new":
+              properties = {
+                _isGiftBy: item.actionData,
+                _tag: ""
+              };
+              try {
+                await CART.addVariantToCart(item.variantId, 1, properties);
+                generalCount.news++;
+              } catch (error) {
+                HH.log(error, "error");
+                reject(error);
+              }
+              break;
+            case "update":
+              updates[item.variantId] = item.quantity;
+              generalCount.updates++;
+              break;
+            default:
+              break;
+          }
+          ++i0;
+        }
+        HH.log("Update summary");
+        HH.log(updates);
+        if (Object.keys(updates).length > 0) {
+          try {
+            await CART.updateCart(updates);
+          } catch (error) {
+            HH.log(error, "error");
+            reject(error);
+          }
+        }
+        try {
+          myCart = await CART.getCartInfo();
+          resolve(myCart);
+        } catch (error) {
+          HH.log(error, "error");
+          reject(error);
+        }
+      } else {
+        HH.log("We have no gifts");
+        resolve(myCart);
+      }
+    });
+  };
+  // Public functions
+  const init = () => {
+    if (
+      window.hasOwnProperty("Shopify") &&
+      window.Shopify.hasOwnProperty("theme") &&
+      window.Shopify.theme.hasOwnProperty("role")
+    ) {
+      switch (Shopify.theme.role) {
+        case "main":
+          env = "production";
+          break;
+        // case 'unpublished':
+        default:
+          env = "development";
+          break;
+      }
+    }
+    HH.setEnv(env);
+
+    let banner = "\n";
+    banner += `\t                \t\n`;
+    banner += `\tFREE 🎁 PLUGIN  \t\n`;
+    banner += `\t                \t\n`;
+    HH.log(`${banner}`, "all");
+  };
+
+  return {
+    setGifts: setGifts,
+    adjustCart: adjustCart,
+    updateVariant: updateVariant,
+    updateForm: updateForm,
+    init: init
+    // getFreeGifts: getFreeGifts // Hide this function
+  };
+})();
+
+$(document).ready(() => {
+  FREE_GIFT_PLUGIN.init();
+});
